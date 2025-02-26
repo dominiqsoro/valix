@@ -55,7 +55,8 @@ class ParcelsController extends Controller
         // Filtrer les colis du jour et de la compagnie de l'utilisateur
         $parcels = Parcel::whereDate('created_at', $today)
             ->where('company_id', $companyId)
-            ->with('client')
+            ->with('client', 'deliveryZone')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $companyClients = Client::where('company_id', $companyId)->get();

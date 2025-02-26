@@ -385,16 +385,42 @@
                             <ul class="pagination justify-content-end mb-0">
                                 {{-- Previous page link --}}
                                 <li class="page-item {{ $parcels->onFirstPage() ? 'disabled' : '' }}">
-                                    <a class="page-link" href="{{ $parcels->previousPageUrl() }}"
-                                        tabindex="-1">Previous</a>
+                                    <a class="page-link" href="{{ $parcels->previousPageUrl() }}" tabindex="-1">Previous</a>
                                 </li>
 
-                                {{-- Pagination links --}}
-                                @foreach ($parcels->getUrlRange(1, $parcels->lastPage()) as $page => $url)
-                                    <li class="page-item {{ $parcels->currentPage() == $page ? 'active' : '' }}">
-                                        <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                {{-- Pagination links with ellipsis --}}
+                                @php
+                                    $currentPage = $parcels->currentPage();
+                                    $lastPage = $parcels->lastPage();
+                                    $maxVisiblePages = 5; // Nombre de pages visibles à la fois
+                                @endphp
+
+                                {{-- Affichage de la première page --}}
+                                @if ($currentPage > 2)
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $parcels->url(1) }}">1</a>
                                     </li>
-                                @endforeach
+                                    @if ($currentPage > 3)
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    @endif
+                                @endif
+
+                                {{-- Pages avant et après la page actuelle --}}
+                                @for ($i = max(1, $currentPage - 2); $i <= min($lastPage, $currentPage + 2); $i++)
+                                    <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
+                                        <a class="page-link" href="{{ $parcels->url($i) }}">{{ $i }}</a>
+                                    </li>
+                                @endfor
+
+                                {{-- Affichage de la dernière page --}}
+                                @if ($currentPage < $lastPage - 2)
+                                    @if ($currentPage < $lastPage - 3)
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    @endif
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $parcels->url($lastPage) }}">{{ $lastPage }}</a>
+                                    </li>
+                                @endif
 
                                 {{-- Next page link --}}
                                 <li class="page-item {{ $parcels->hasMorePages() ? '' : 'disabled' }}">
@@ -403,6 +429,7 @@
                             </ul>
                         </nav>
                     </div>
+
 
                 </div>
             </div>

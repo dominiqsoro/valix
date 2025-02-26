@@ -46,9 +46,15 @@ class DashboardController extends Controller
         // Récupérer tous les clients de la compagnie
         $companyClients = Client::where('company_id', $company->company_id)->get();
 
-        $today = Carbon::today();
+        // Date de début de la période (le début de la journée actuelle à 11h)
+        $today = Carbon::today()->setTime(11, 0, 0);
+        // Calculer la période de 11h du jour actuel à 11h du jour suivant
+        $startDate = $today; // 11h de la date donnée
+        $endDate = $today->copy()->addDay()->setTime(11, 0, 0); // Le jour suivant à 11h
+
+        // Récupérer les statistiques des colis dans cette période
         $parcelStats = Parcel::where('company_id', $company->company_id)
-            ->whereDate('created_at', $today)
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->selectRaw('COUNT(*) as totalParcelsToday, SUM(delivery_fee) as totalDeliveryAmount, SUM(package_price) as totalParcelAmount')
             ->first();
 
@@ -57,21 +63,41 @@ class DashboardController extends Controller
 
         // Somme des montants des livraisons du jour
         $totalDeliveryAmount = Parcel::where('company_id', $company->company_id)
-            ->whereDate('created_at', Carbon::today())
+            ->whereBetween('created_at', [$startDate, $endDate]) // Filtrage de la période
             ->sum('delivery_fee');
 
         // Somme des montants des colis du jour
         $totalParcelAmount = Parcel::where('company_id', $company->company_id)
-            ->whereDate('created_at', Carbon::today())
+            ->whereBetween('created_at', [$startDate, $endDate]) // Filtrage de la période
             ->sum('package_price');
 
         // Nombre de colis du jour
         $totalParcelsToday = Parcel::where('company_id', $company->company_id)
-            ->whereDate('created_at', Carbon::today())
+            ->whereBetween('created_at', [$startDate, $endDate]) // Filtrage de la période
             ->count();
 
-        return view('pages.dashboard', compact('parcels', 'clients', 'companyClients', 'totalClients', 'totalDeliveryAmount', 'totalParcelAmount', 'totalParcelsToday',));
+        // Récupérer le nombre de colis par statut dans la période de 11h à 11h
+        $parcelStatsByStatus = [
+            'pending' => Parcel::where('company_id', $company->company_id)
+                ->where('status', 'pending')
+                ->whereBetween('created_at', [$startDate, $endDate]) // Filtrage de la période
+                ->count(),
+            'in_transit' => Parcel::where('company_id', $company->company_id)
+                ->where('status', 'in_transit')
+                ->whereBetween('created_at', [$startDate, $endDate]) // Filtrage de la période
+                ->count(),
+            'delivered' => Parcel::where('company_id', $company->company_id)
+                ->where('status', 'delivered')
+                ->whereBetween('created_at', [$startDate, $endDate]) // Filtrage de la période
+                ->count(),
+            'canceled' => Parcel::where('company_id', $company->company_id)
+                ->where('status', 'canceled')
+                ->whereBetween('created_at', [$startDate, $endDate]) // Filtrage de la période
+                ->count(),
+        ];
+
+
+
+        return view('pages.dashboard', compact('parcels', 'clients', 'companyClients', 'totalClients', 'totalDeliveryAmount', 'totalParcelAmount', 'totalParcelsToday', 'parcelStats', 'parcelStatsByStatus'));
     }
-
-
 }

@@ -12,6 +12,13 @@
             <div class="flex-grow-1">
                 <h4 class="fs-18 fw-semibold m-0">Tableau de bord</h4>
             </div>
+
+            <div class="text-end d-flex align-items-center">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                    data-bs-target="#addTransportModal">
+                    <i class="mdi mdi-restart"></i> Actualiser
+                </button>
+            </div>
         </div>
 
         <!-- Start Row -->
@@ -66,7 +73,8 @@
                                         </div>
                                         <p class="mb-0 text-dark fs-15">Livraison du jour</p>
                                     </div>
-                                    <h3 class="mb-0 fs-24 text-black">{{ number_format($totalDeliveryAmount ?? 0, 0) }} FCFA</h3>
+                                    <h3 class="mb-0 fs-24 text-black">{{ number_format($totalDeliveryAmount ?? 0, 0) }} FCFA
+                                    </h3>
                                 </div>
                             </div>
 
@@ -96,7 +104,8 @@
                                         </div>
                                         <p class="mb-0 text-dark fs-15">Montant colis</p>
                                     </div>
-                                    <h3 class="mb-0 fs-24 text-black">{{ number_format($totalParcelAmount ?? 0, 0) }} FCFA</h3>
+                                    <h3 class="mb-0 fs-24 text-black">{{ number_format($totalParcelAmount ?? 0, 0) }} FCFA
+                                    </h3>
                                 </div>
                             </div>
 
@@ -149,6 +158,137 @@
         </div>
         <!-- End Start -->
 
+        <!-- Start Row -->
+        <div class="row">
+            <!-- Card for Pending Parcels -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="widget-first">
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div
+                                            class="bg-warning-subtle rounded-2 p-1 me-2 border border-dashed border-warning">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                viewBox="0 0 24 24">
+                                                <path fill="#73bbe2"
+                                                    d="M7 20V8.975q0-.825.6-1.4T9.025 7H20q.825 0 1.413.587T22 9v8l-5 5H9q-.825 0-1.412-.587T7 20M2.025 6.25q-.15-.825.325-1.487t1.3-.813L14.5 2.025q.825-.15 1.488.325t.812 1.3L17.05 5H9Q7.35 5 6.175 6.175T5 9v9.55q-.4-.225-.687-.6t-.363-.85zM20 16h-4v4z" />
+                                            </svg>
+                                        </div>
+                                        <p class="mb-0 text-dark fs-15">En Cours</p>
+                                    </div>
+                                    <h3 class="mb-0 fs-24 text-black">{{ number_format($parcelStatsByStatus['pending'] ?? 0) }}</h3>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-muted mb-0 fs-13">
+                                    <small class="text-dark fs-14"> Nombre de colis en cours </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card for In Transit Parcels -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="widget-first">
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-info-subtle rounded-2 p-1 me-2 border border-dashed border-info">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                viewBox="0 0 24 24">
+                                                <path fill="#73bbe2"
+                                                    d="M7 20V8.975q0-.825.6-1.4T9.025 7H20q.825 0 1.413.587T22 9v8l-5 5H9q-.825 0-1.412-.587T7 20M2.025 6.25q-.15-.825.325-1.487t1.3-.813L14.5 2.025q.825-.15 1.488.325t.812 1.3L17.05 5H9Q7.35 5 6.175 6.175T5 9v9.55q-.4-.225-.687-.6t-.363-.85zM20 16h-4v4z" />
+                                            </svg>
+                                        </div>
+                                        <p class="mb-0 text-dark fs-15">En Attente</p>
+                                    </div>
+                                    <h3 class="mb-0 fs-24 text-black">{{ number_format($parcelStatsByStatus['in_transit'] ?? 0) }}
+                                    </h3>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-muted mb-0 fs-13">
+                                    <small class="text-dark fs-14"> Nombre de colis en attente </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card for Delivered Parcels -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="widget-first">
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div
+                                            class="bg-success-subtle rounded-2 p-1 me-2 border border-dashed border-success">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                viewBox="0 0 24 24">
+                                                <path fill="#73bbe2"
+                                                    d="M7 20V8.975q0-.825.6-1.4T9.025 7H20q.825 0 1.413.587T22 9v8l-5 5H9q-.825 0-1.412-.587T7 20M2.025 6.25q-.15-.825.325-1.487t1.3-.813L14.5 2.025q.825-.15 1.488.325t.812 1.3L17.05 5H9Q7.35 5 6.175 6.175T5 9v9.55q-.4-.225-.687-.6t-.363-.85zM20 16h-4v4z" />
+                                            </svg>
+                                        </div>
+                                        <p class="mb-0 text-dark fs-15">Livrés</p>
+                                    </div>
+                                    <h3 class="mb-0 fs-24 text-black">{{ number_format($parcelStatsByStatus['delivered'] ?? 0) }}
+                                    </h3>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-muted mb-0 fs-13">
+                                    <small class="text-dark fs-14"> Nombre de colis livrés </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card for Canceled Parcels -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="widget-first">
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-danger-subtle rounded-2 p-1 me-2 border border-dashed border-danger">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                viewBox="0 0 24 24">
+                                                <path fill="#73bbe2"
+                                                    d="M7 20V8.975q0-.825.6-1.4T9.025 7H20q.825 0 1.413.587T22 9v8l-5 5H9q-.825 0-1.412-.587T7 20M2.025 6.25q-.15-.825.325-1.487t1.3-.813L14.5 2.025q.825-.15 1.488.325t.812 1.3L17.05 5H9Q7.35 5 6.175 6.175T5 9v9.55q-.4-.225-.687-.6t-.363-.85zM20 16h-4v4z" />
+                                            </svg>
+                                        </div>
+                                        <p class="mb-0 text-dark fs-15">Retournés</p>
+                                    </div>
+                                    <h3 class="mb-0 fs-24 text-black">{{ number_format($parcelStatsByStatus['canceled'] ?? 0) }}
+                                    </h3>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-muted mb-0 fs-13">
+                                    <small class="text-dark fs-14"> Nombre de colis retournés </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Row -->
+
+
+
         <div class="row">
             <!-- Start Products Stock -->
             <div class="col-md-12">
@@ -187,25 +327,31 @@
 
                                 <tbody>
                                     @foreach ($parcels as $parcel)
-                                    <tr>
-                                        <td>{{ $parcel->client->name }} - {{ $parcel->client->location }}</td>
-                                        <td> {{ $parcel->delivery_address }}</td>
-                                        <td class="text-muted">{{ $parcel->identifiant }}</td>
-                                        <td class="text-muted">{{  number_format($parcel->delivery_fee ?? 0) }} F</td>
-                                        <td class="text-muted">{{  number_format($parcel->package_price ?? 0) }} F</td>
-                                        <td>
-                                            @if ($parcel->status == 'in_transit')
-                                                <span class="badge bg-warning-subtle text-warning fw-semibold fs-13">En attente</span>
-                                            @elseif ($parcel->status == 'pending')
-                                                <span class="badge bg-primary-subtle text-info fw-semibold fs-13">En cours</span>
-                                            @elseif ($parcel->status == 'delivered')
-                                                <span class="badge bg-primary-subtle text-primary fw-semibold fs-13">Livrée</span>
-                                            @elseif ($parcel->status == 'canceled')
-                                                <span class="badge bg-danger-subtle text-danger fw-semibold fs-13">Retournée</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-muted">{{ \Carbon\Carbon::parse($parcel->created_at)->locale('fr')->isoFormat('D MMMM, YYYY') }}</td>
-                                    </tr>
+                                        <tr>
+                                            <td>{{ $parcel->client->name }} - {{ $parcel->client->location }}</td>
+                                            <td> {{ $parcel->delivery_address }}</td>
+                                            <td class="text-muted">{{ $parcel->identifiant }}</td>
+                                            <td class="text-muted">{{ number_format($parcel->delivery_fee ?? 0) }} F</td>
+                                            <td class="text-muted">{{ number_format($parcel->package_price ?? 0) }} F</td>
+                                            <td>
+                                                @if ($parcel->status == 'in_transit')
+                                                    <span class="badge bg-warning-subtle text-warning fw-semibold fs-13">En
+                                                        attente</span>
+                                                @elseif ($parcel->status == 'pending')
+                                                    <span class="badge bg-primary-subtle text-info fw-semibold fs-13">En
+                                                        cours</span>
+                                                @elseif ($parcel->status == 'delivered')
+                                                    <span
+                                                        class="badge bg-primary-subtle text-primary fw-semibold fs-13">Livrée</span>
+                                                @elseif ($parcel->status == 'canceled')
+                                                    <span
+                                                        class="badge bg-danger-subtle text-danger fw-semibold fs-13">Retournée</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-muted">
+                                                {{ \Carbon\Carbon::parse($parcel->created_at)->locale('fr')->isoFormat('D MMMM, YYYY') }}
+                                            </td>
+                                        </tr>
                                     @endforeach
                                 </tbody>
 

@@ -29,6 +29,7 @@ class ReportsController extends Controller
             ])->with('error', 'Aucune compagnie associée à votre compte.');
         }
 
+
         $companyClients = Client::all(); // Récupère tous les clients (à adapter selon ta logique)
 
         // Récupérer les colis de la compagnie avec les infos associées (client et zone)
@@ -187,13 +188,13 @@ class ReportsController extends Controller
     }
 
 
-
-
+    // Telecharger et filtrer les colis
     public function downloadPdf(Request $request)
     {
-        // Optionnel : augmenter le temps d'exécution si nécessaire
+        // Optionnel : Augmenter le temps d'exécution si nécessaire
         set_time_limit(120);
 
+        // Récupérer l'utilisateur connecté
         $user = auth()->user();
 
         // Récupérer la compagnie de l'utilisateur connecté
@@ -202,12 +203,14 @@ class ReportsController extends Controller
             return redirect()->back()->with('error', 'Aucune compagnie associée à votre compte.');
         }
 
-        // Récupérer les filtres envoyés par le formulaire
-        $deliveryDate = $request->input('delivery_date'); // Doit être au format 'Y-m-d'
-        $clientFilter = $request->input('client');          // Le nom du client sélectionné
-        $statusFilter = $request->input('status');         // Le statut sélectionné
+        $hideDeliveryAmount = $request->has('hide_delivery_amount') && $request->input('hide_delivery_amount') == 'on';
 
-        // Ajoutez ici la définition du mapping des statuts
+        // Récupérer les filtres envoyés par le formulaire
+        $deliveryDate = $request->input('delivery_date');
+        $clientFilter = $request->input('client');
+        $statusFilter = $request->input('status');
+
+        // Mapping des statuts
         $statusMapping = [
             'En cours' => 'pending',
             'En attente' => 'in_transit',
@@ -215,42 +218,50 @@ class ReportsController extends Controller
             'Retournée'  => 'canceled',
         ];
 
-        // Construction de la requête pour récupérer les colis filtrés
+        // Récupérer tous les clients de l'entreprise
+        $companyClients = Client::where('company_id', $company->company_id)->get();
+
+        // Construire la requête
         $query = Parcel::with(['client', 'deliveryZone'])
             ->where('company_id', $company->company_id);
 
-        // Filtrer par date précise
-        if ($deliveryDate) {
+        // Filtre par date si fournie
+        if (!empty($deliveryDate)) {
             try {
-                $date = Carbon::parse($deliveryDate);
-                $query->whereDate('created_at', $date);
+                // Parse la date envoyée et ajout une heure si nécessaire
+                $date = Carbon::parse($deliveryDate)->setTime(11, 0, 0); // Fixer l'heure à 11h
+
+                // Calculer la période de 11h du jour suivant
+                $startDate = $date;
+                $endDate = $date->copy()->addDay()->setTime(11, 0, 0); // Le jour suivant à 11h
+
+                // Appliquer le filtre sur la plage horaire
+                $query->whereBetween('created_at', [$startDate, $endDate]);
             } catch (\Exception $e) {
-                // Gestion de l'erreur de format de date
+                // Gestion d'erreur si la date est invalide
             }
         }
 
-        // Filtrer par client si un client spécifique est sélectionné
-        if ($clientFilter && $clientFilter !== 'Tous les clients') {
+        // Filtrer par client si différent de "Tous les clients"
+        if (!empty($clientFilter) && $clientFilter !== 'Tous les clients') {
             $query->whereHas('client', function ($q) use ($clientFilter) {
                 $q->where('name', $clientFilter);
             });
         }
 
-        // Filtrer par statut si un statut spécifique est sélectionné
-        if ($statusFilter && $statusFilter !== 'Tous les statuts') {
-            // Appliquez le statut à partir du mapping
+        // Filtrer par statut si différent de "Tous les statuts"
+        if (!empty($statusFilter) && $statusFilter !== 'Tous les statuts') {
             $status = $statusMapping[$statusFilter] ?? null;
             if ($status) {
                 $query->where('status', $status);
             }
         }
 
-        // Récupérer les colis correspondant aux filtres
+        // Récupération des colis filtrés
         $parcels = $query->get();
 
-        // Rediriger vers la page de rapport avec les données des colis
-        return view('pdf.reporting', compact('parcels', 'company', 'deliveryDate', 'clientFilter', 'statusFilter'));
+        // Rediriger vers la page PDF avec les données
+        return view('pdf.reporting', compact('parcels', 'company', 'deliveryDate', 'clientFilter', 'statusFilter', 'hideDeliveryAmount', 'companyClients'));
     }
-
 
 }

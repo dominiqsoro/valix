@@ -76,7 +76,8 @@
                                                         <span class="badge bg-secondary">Inconnu</span>
                                                 @endswitch
                                             </td>
-                                            <td>{{ \Carbon\Carbon::parse($parcel->created_at)->locale('fr')->isoFormat('D MMMM, YYYY') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($parcel->created_at)->locale('fr')->isoFormat('D MMMM, YYYY') }}
+                                            </td>
                                         </tr>
                                     @endforeach
 
@@ -132,26 +133,36 @@
                                     <input type="text" class="form-control" id="minmax-datepicker" name="delivery_date"
                                         placeholder="YYYY-MM-DD">
                                 </div>
-                                <!-- Filtrer par Client -->
+                                <!-- Sélection du client -->
                                 <div class="col-12">
                                     <label for="filterClient" class="form-label">Client</label>
                                     <select class="form-select" id="filterClient" name="client">
-                                        <option value="Tous les clients" selected>Tous les clients</option>
+                                        <option value="Tous les clients" {{ ($clientFilter ?? 'Tous les clients') == 'Tous les clients' ? 'selected' : '' }}>Tous les clients</option>
                                         @foreach ($companyClients as $client)
-                                            <option value="{{ $client->name }}">{{ $client->name }}</option>
+                                            <option value="{{ $client->name }}" {{ ($clientFilter ?? '') == $client->name ? 'selected' : '' }}>
+                                                {{ $client->name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <!-- Filtrer par Statut -->
+
+                                <!-- Sélection du statut -->
                                 <div class="col-12">
                                     <label for="filterStatus" class="form-label">Statut</label>
                                     <select class="form-select" id="filterStatus" name="status">
-                                        <option value="Tous les statuts" selected>Tous les statuts</option>
-                                        <option value="En attente">En attente</option>
-                                        <option value="En cours">En cours</option>
-                                        <option value="Livrée">Livrée</option>
-                                        <option value="Retournée">Retournée</option>
+                                        <option value="Tous les statuts" {{ ($statusFilter ?? 'Tous les statuts') == 'Tous les statuts' ? 'selected' : '' }}>Tous les statuts</option>
+                                        <option value="En attente" {{ ($statusFilter ?? '') == 'En attente' ? 'selected' : '' }}>En attente</option>
+                                        <option value="En cours" {{ ($statusFilter ?? '') == 'En cours' ? 'selected' : '' }}>En cours</option>
+                                        <option value="Livrée" {{ ($statusFilter ?? '') == 'Livrée' ? 'selected' : '' }}>Livrée</option>
+                                        <option value="Retournée" {{ ($statusFilter ?? '') == 'Retournée' ? 'selected' : '' }}>Retournée</option>
                                     </select>
+                                </div>
+
+                                <!-- Afficher les montants de livraison -->
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="hide_delivery_amount" name="hide_delivery_amount"
+                                           {{ old('hide_delivery_amount') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="hide_delivery_amount">Ne pas afficher les montants de livraison</label>
                                 </div>
                                 <!-- Boutons pour valider le filtre et imprimer ou télécharger en PDF -->
                                 <div class="col-12 text-end">
@@ -171,4 +182,3 @@
 
 
 @endsection
-

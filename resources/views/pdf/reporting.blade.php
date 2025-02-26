@@ -25,7 +25,7 @@
 <body>
 
 
-    {{-- page : (resources/views/pdf/reports.blade.php) --}}
+    {{-- page : (resources/views/pdf/reporting.blade.php) --}}
     <div>
         <div class="text-center mb-4">
             <h2>Rapports du client <b>{{ $clientFilter ?? 'Tous les clients' }}</b></h2>
@@ -49,7 +49,10 @@
                                 <th>Zone de livraison</th>
                                 <th>Client</th>
                                 <th>Montant colis</th>
-                                <th>Montant livraison</th>
+                                @if (!$hideDeliveryAmount)
+                                    <!-- Conditionner l'affichage de la colonne -->
+                                    <th>Montant livraison</th>
+                                @endif
                                 <th>Statut</th>
                                 <th>Date de livraison</th>
                             </tr>
@@ -61,7 +64,10 @@
                                     <td>{{ $parcel->deliveryZone->zone_name ?? 'N/A' }}</td>
                                     <td>{{ $parcel->client->name ?? 'N/A' }}</td>
                                     <td>{{ number_format($parcel->package_price, 0, ',', ' ') }}F</td>
-                                    <td>{{ number_format($parcel->delivery_fee, 0, ',', ' ') }}F</td>
+                                    @if (!$hideDeliveryAmount)
+                                        <!-- Conditionner l'affichage de la colonne -->
+                                        <td>{{ number_format($parcel->delivery_fee, 0, ',', ' ') }}F</td>
+                                    @endif
                                     <td> @switch($parcel->status)
                                             @case('in_transit')
                                                 <span class="badge bg-warning-subtle text-warning fw-semibold fs-13">En
@@ -98,11 +104,14 @@
                                 <td><b>Total</b></td>
                                 <td class="text-muted">
                                     {{ number_format($parcels->sum('package_price'), 0, ',', ' ') }}F</td>
-                                <td class="text-muted">{{ number_format($parcels->sum('delivery_fee'), 0, ',', ' ') }}F
-                                </td>
+                                @if (!$hideDeliveryAmount)
+                                    <!-- Conditionner l'affichage de la colonne -->
+                                    <td class="text-muted">
+                                        {{ number_format($parcels->sum('delivery_fee'), 0, ',', ' ') }}F</td>
+                                @endif
                                 <td></td>
-                                <td>{{ \Carbon\Carbon::parse($parcel->created_at)->locale('fr')->isoFormat('D MMMM, YYYY') }}
-                                </td>
+                                <td>tiré le {{ \Carbon\Carbon::today()->locale('fr')->isoFormat('D MMMM, YYYY [à] HH:mm') }}</td>
+                            </td>
                             </tr>
                         </tbody>
                     </table>
@@ -114,7 +123,8 @@
         <script>
             function downloadPDF() {
                 const element = document.body;
-                const clientName = "{{ $clientFilter ?? 'Tous_les_clients' }}".replace(/\s+/g, '_'); // Remplace les espaces par des underscores
+                const clientName = "{{ $clientFilter ?? 'Tous_les_clients' }}".replace(/\s+/g,
+                    '_'); // Remplace les espaces par des underscores
                 const date = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
                 const fileName = `rapport_livraisons_${clientName}_${date}.pdf`;
 
